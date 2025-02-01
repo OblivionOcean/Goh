@@ -1,5 +1,5 @@
 # Goh
-[![GoDoc](https://pkg.go.dev/badge/github.com/OblivionOcean/Goh)](https://pkg.go.dev/github.com/OblivionOcean/Gohh)
+[![GoDoc](https://pkg.go.dev/badge/github.com/OblivionOcean/Goh)](https://pkg.go.dev/github.com/OblivionOcean/Goh)
 [![Go Report Card](https://goreportcard.com/badge/github.com/OblivionOcean/Goh)](https://goreportcard.com/report/github.com/OblivionOcean/Goh)
 
 Goh 是一款Go语言的预编译快速模板引擎。
