@@ -79,8 +79,8 @@ func (g *Generator) Generate(b *Block) {
 	}
 	switch b.Type {
 	case Code:
-		g.Text.WriteString(b.Content)
-		g.Text.WriteString("\n")
+		g.Text2.WriteString(b.Content)
+		g.Text2.WriteString("\n")
 	case HTML:
 		if len(strings.Trim(b.Content, " ")) == 0 {
 			break
@@ -138,7 +138,7 @@ func (g *Generator) Generate(b *Block) {
 	}
 	if b == g.Root {
 		g.Text.WriteString(strconv.Itoa(g.ConstLength))
-			g.Text.WriteString(")\n")
+		g.Text.WriteString(")\n")
 		g.Text.ReadFrom(g.Text2)
 		g.Text.WriteString("}\n")
 	}
