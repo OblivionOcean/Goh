@@ -6,7 +6,7 @@ package template
 import (
 	"bytes"
 
-	"github.com/OblivionOcean/Goh/utils"
+	Goh "github.com/OblivionOcean/Goh/utils"
 )
 
 func UserList(title string, userList []string, buf *bytes.Buffer) {

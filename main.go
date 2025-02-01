@@ -16,13 +16,13 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	for i:=0;i<len(files);i++ {
+	for i := 0; i < len(files); i++ {
 		if files[i].IsDir() {
 			continue
 		}
 		if path.Ext(files[i].Name()) == *ext {
 			g := &Generator{
-				Dest: *dest,
+				Dest:        *dest,
 				PackageName: *packname,
 			}
 			g.New(files[i].Name())

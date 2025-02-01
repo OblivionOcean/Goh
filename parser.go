@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/OblivionOcean/Goh/utils"
-	"bytes"
 	"io"
 	"os"
 	"path"
+	"strings"
+
+	Goh "github.com/OblivionOcean/Goh/utils"
 )
 
 var Cache = map[string]*Block{}
@@ -32,7 +33,7 @@ type Block struct {
 	Type     int
 	Children []*Block
 	Parent   *Block
-	Content  []byte
+	Content  string
 	VarType  int
 	Unuse    bool
 }
@@ -40,7 +41,7 @@ type Block struct {
 func (b *Block) AddChild(child *Block) {
 	if len(b.Children) > 0 && child.Type == HTML && b.Children[len(b.Children)-1].Type == HTML {
 		if len(b.Children[len(b.Children)-1].Content) > 0 {
-			b.Children[len(b.Children)-1].Content = append(b.Children[len(b.Children)-1].Content, child.Content...)
+			b.Children[len(b.Children)-1].Content += child.Content
 		} else {
 			b.Children[len(b.Children)-1] = child
 		}
@@ -50,28 +51,28 @@ func (b *Block) AddChild(child *Block) {
 	}
 }
 
-func Parse(fpath string) (*Block, []byte, *Block) {
+func Parse(fpath string) (*Block, string, *Block) {
 	// 将结构体变为局部变量，优化汇编代码跳转花费的时间
 	var (
-		Text       []byte
+		Text       string
 		Curser     int
 		EndCurser  int
 		Root       *Block
 		DefindFunc *Block
-		RawCode    []byte
+		RawCode    string
 	)
-	RawCode = []byte{}
 	file, err := os.OpenFile(fpath, os.O_RDONLY, 0644)
 	if err != nil {
 		panic(err.Error())
 	}
-	Text, err = io.ReadAll(file)
+	tmp, err := io.ReadAll(file)
+	Text = Goh.Byte2String(tmp)
 	if err != nil {
 		panic(err.Error())
 	}
 	Root = &Block{}
 	for {
-		Curser = bytes.Index(Text, []byte{'<', '%'})
+		Curser = strings.Index(Text, "<%")
 		if Curser == -1 {
 			Root.AddChild(&Block{
 				Content: Text,
@@ -85,7 +86,7 @@ func Parse(fpath string) (*Block, []byte, *Block) {
 		})
 		for {
 			Text = Text[Curser+2:]
-			EndCurser = bytes.Index(Text, []byte{'%', '>'})
+			EndCurser = strings.Index(Text, "%>")
 			if Curser == -1 {
 				panic("Syntax error")
 			}
@@ -145,19 +146,18 @@ func Parse(fpath string) (*Block, []byte, *Block) {
 					Root.AddChild(block)
 				case '#':
 				case '+':
-					fpath := path.Join(path.Dir(fpath), Goh.Byte2String(bytes.Trim(Text[1:EndCurser], " \"\t\n\r")))
+					fpath := path.Join(path.Dir(fpath), strings.Trim(Text[1:EndCurser], " \"\t\n\r"))
 					tmp, rawCode, _ := Parse(fpath)
-					RawCode = append(RawCode, rawCode...)
+					RawCode += rawCode
 					for i := 0; i < len(tmp.Children); i++ {
 						Root.AddChild(tmp.Children[i])
 					}
 				case ':':
 					DefindFunc = &Block{
-						Content: bytes.Trim(Text[1:EndCurser], "\n\t\r "),
+						Content: strings.Trim(Text[1:EndCurser], "\n\t\r "),
 					}
 				case '!':
-					RawCode = append(RawCode, Text[1:EndCurser]...)
-					RawCode = append(RawCode, '\n')
+					RawCode += Text[1:EndCurser] + "\n"
 				default:
 					Root.AddChild(&Block{
 						Type:    Code,
@@ -171,6 +171,7 @@ func Parse(fpath string) (*Block, []byte, *Block) {
 		if 2 >= len(Text) {
 			Root.AddChild(&Block{
 				Content: Text,
+				Type:    HTML,
 			})
 			break
 		}

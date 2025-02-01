@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/OblivionOcean/Goh/utils"
 	"bytes"
 	"errors"
 	"fmt"
@@ -33,12 +32,11 @@ func execCommand(command string) {
 type Generator struct {
 	DefindFunc  *Block
 	Root        *Block
-	Text        []byte
-	Text2       []byte
+	Text        *os.File
+	Text2       *bytes.Buffer
 	ConstLength int
 	BufName     string
-	Vars        []byte
-	RawCode     []byte
+	RawCode     string
 	PackageName string
 	Dest        string
 }
@@ -47,14 +45,15 @@ func (g *Generator) New(fpath string) {
 	if g.PackageName == "" {
 		g.PackageName = "template"
 	}
+	g.Text2 = bytes.NewBuffer(nil)
 	g.Root, g.RawCode, g.DefindFunc = Parse(fpath)
-	g.Generate(nil)
 	file, err := os.Create(path.Join(g.Dest, path.Base(fpath)+".go"))
 	if err != nil {
 		panic(err.Error())
 	}
 	file.WriteString("// DO NOT EDIT!\n// Generate By Goh\n\n")
-	file.Write(g.Text)
+	g.Text = file
+	g.Generate(nil)
 	execCommand("goimports -w .")
 	execCommand("gofmt -w .")
 	fmt.Println("\033[0;32mSuccess\033[0m", fpath)
@@ -62,9 +61,9 @@ func (g *Generator) New(fpath string) {
 
 func (g *Generator) Generate(b *Block) {
 	if b == nil {
-		g.Text = append(g.Text, Goh.String2Bytes("package ")...)
-		g.Text = append(g.Text, g.PackageName...)
-		g.Text = append(g.Text, Goh.String2Bytes("\nimport (\n\t\"bytes\"\n\t\"github.com/OblivionOcean/Goh/utils\"\n)\n\n")...)
+		g.Text.WriteString("package ")
+		g.Text.WriteString(g.PackageName)
+		g.Text.WriteString("\nimport (\n\t\"bytes\"\n\t\"github.com/OblivionOcean/Goh/utils\"\n)\n\n")
 		if g.DefindFunc == nil {
 			return
 		}
@@ -73,76 +72,80 @@ func (g *Generator) Generate(b *Block) {
 			panic(err.Error())
 		}
 		g.BufName = name
-		g.Text = append(g.Text, g.RawCode...)
-		g.Text = append(g.Text, code...)
-		g.Text = append(g.Text, Goh.String2Bytes(fmt.Sprintf("{\n%s.Grow(", name))...)
+		g.Text.WriteString(g.RawCode)
+		g.Text.WriteString(code)
+		g.Text.WriteString(fmt.Sprintf("{\n%s.Grow(", name))
 		b = g.Root
 	}
 	switch b.Type {
 	case Code:
-		g.Text2 = append(g.Text2, b.Content...)
-		g.Text2 = append(g.Text2, '\n')
+		g.Text.WriteString(b.Content)
+		g.Text.WriteString("\n")
 	case HTML:
-		if len(bytes.Trim(b.Content, " ")) == 0 {
+		if len(strings.Trim(b.Content, " ")) == 0 {
 			break
 		}
 		tmp := "%s.WriteString(`%s`)\n"
 		g.ConstLength += len(b.Content)
-		g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf(tmp, g.BufName, b.Content))...)
+		g.Text2.WriteString(fmt.Sprintf(tmp, g.BufName, b.Content))
 	case Escape:
-		b.Content = bytes.Trim(b.Content, " ")
+		b.Content = strings.Trim(b.Content, " ")
 		if len(b.Content) == 0 {
 			break
 		}
+		var tmp string
 		switch b.VarType {
 		case String:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.EscapeHTML(%s, %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("Goh.EscapeHTML(%s, %s)\n", b.Content, g.BufName)
 		case Bytes:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.EscapeHTML(Goh.Bytes2String(%s), %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("Goh.EscapeHTML(Goh.Bytes2String(%s), %s)\n", b.Content, g.BufName)
 		case Int:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.FormatInt(int64(%s), %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("Goh.FormatInt(int64(%s), %s)\n", b.Content, g.BufName)
 		case Uint:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.FormatUint(uint64(%s), %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("Goh.FormatUint(uint64(%s), %s)\n", b.Content, g.BufName)
 		case Bool:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.FormatBool(%s, %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("Goh.FormatBool(%s, %s)\n", b.Content, g.BufName)
 			g.ConstLength += 5
 		case Any:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.FormatAny(%s, %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("Goh.FormatAny(%s, %s)\n", b.Content, g.BufName)
 		}
+		g.Text2.WriteString(tmp)
 	case Val:
-		b.Content = bytes.Trim(b.Content, " ")
+		b.Content = strings.Trim(b.Content, " ")
 		if len(b.Content) == 0 {
 			break
 		}
+		var tmp string
 		switch b.VarType {
 		case String:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("%s.WriteString(%s)\n", g.BufName, b.Content))...)
+			tmp = fmt.Sprintf("%s.WriteString(%s)\n", g.BufName, b.Content)
 		case Bytes:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("%s.Write(%s)\n", g.BufName, b.Content))...)
-		case Int:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.FormatInt(%s, %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("%s.Write(%s)\n", g.BufName, b.Content)
+				case Int:
+			tmp = fmt.Sprintf("Goh.FormatInt(int64(%s), %s)\n", b.Content, g.BufName)
 		case Uint:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.FormatUint(%s, %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("Goh.FormatUint(uint64(%s), %s)\n", b.Content, g.BufName)
 		case Bool:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.FormatBool(%s, %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("Goh.FormatBool(%s, %s)\n", b.Content, g.BufName)
 			g.ConstLength += 5
 		case Any:
-			g.Text2 = append(g.Text2, Goh.String2Bytes(fmt.Sprintf("Goh.FormatAny(%s, %s)\n", b.Content, g.BufName))...)
+			tmp = fmt.Sprintf("Goh.FormatAny(%s, %s)\n", b.Content, g.BufName)
 		}
+		g.Text2.WriteString(tmp)
 	}
 	for i := 0; i < len(b.Children); i++ {
 		g.Generate(b.Children[i])
 	}
 	if b == g.Root {
-		g.Text = append(g.Text, Goh.String2Bytes(strconv.Itoa(g.ConstLength))...)
-		g.Text = append(g.Text, ')', '\n')
-		g.Text = append(g.Text, g.Text2...)
-		g.Text = append(g.Text, '}', '\n')
+		g.Text.WriteString(strconv.Itoa(g.ConstLength))
+			g.Text.WriteString(")\n")
+		g.Text.ReadFrom(g.Text2)
+		g.Text.WriteString("}\n")
 	}
 
 }
 
-func (g *Generator) GenerateFunc(b *Block) (code []byte, name string, err error) {
+func (g *Generator) GenerateFunc(b *Block) (code string, name string, err error) {
 	src := []byte("package Goh\n")
 	src = append(src, b.Content...)
 
@@ -154,7 +157,7 @@ func (g *Generator) GenerateFunc(b *Block) (code []byte, name string, err error)
 
 	funcDecl, ok := file.Decls[0].(*ast.FuncDecl)
 	if !ok {
-		return nil, "", errors.New("Definition is not function type")
+		return "", "", errors.New("Definition is not function type")
 	}
 
 	params := funcDecl.Type.Params.List

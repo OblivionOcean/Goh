@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
-func CountByte(s []byte, sep byte) int {
+func CountByte(s string, sep byte) int {
 	n := 0
 	for {
-		i := bytes.IndexByte(s, sep)
+		i := strings.IndexByte(s, sep)
 		if i == -1 {
 			return n
 		}
