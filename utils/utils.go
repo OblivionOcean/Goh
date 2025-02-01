@@ -47,6 +47,7 @@ func EscapeHTML(html string, buffer *bytes.Buffer) {
 		buffer.WriteString(escapedValues[k])
 		l = i + 1
 	}
+	buffer.WriteString(html[l:])
 }
 
 func FormatFloat(n float64, buf *bytes.Buffer) {
