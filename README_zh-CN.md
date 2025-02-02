@@ -19,7 +19,7 @@ Goh 是一款Go语言的预编译快速模板引擎。
 - [ ] 更改模板文件后自动重新编译。
 
 ## 性能测试
-从https://github.com/slinso/goTemplateBenchmark获取，目前为本地测试结果，代码与Hero部分的测试代码相同
+从 https://github.com/slinso/goTemplateBenchmark 获取，目前为本地测试结果，代码与Hero部分的测试代码相同
 ```
 goos: windows
 goarch: amd64
