@@ -90,7 +90,7 @@ Usage of ./Goh:
   -src string
         the html template file or directory (default "./")
 ```
-> 完整的使用方法请参考[实例程序](https://github.com/OblivionOcean/Goh/blob/master/README.md)
+> 完整的使用方法请参考[实例程序](https://github.com/OblivionOcean/Goh/tree/master/example)
 
 ```html
 <%: func UserList(title string, userList []string, buf *bytes.Buffer) %>
