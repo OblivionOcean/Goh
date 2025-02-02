@@ -7,14 +7,66 @@ Goh 是一款Go语言的预编译快速模板引擎。
 [English](https://github.com/OblivionOcean/Goh/blob/master/README.md) | 简体中文
 ## 目录
 - [特性](#特性)
+- [性能测试](#性能测试)
 - [安装](#安装)
 - [使用](#使用)
 - [语法](#语法)
+  
 ## 特性
 - [x] 预编译模板引擎，提升运行速度。
 - [x] 几乎兼容·Go语言的语法。
 - [x] 0依赖。
 - [ ] 更改模板文件后自动重新编译。
+
+## 性能测试
+从https://github.com/slinso/goTemplateBenchmark获取，目前为本地测试结果，代码与Hero部分的测试代码相同
+```
+goos: windows
+goarch: amd64
+pkg: github.com/SlinSo/goTemplateBenchmark
+cpu: Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz
+# 复杂模板测试
+BenchmarkComplexGolang-16                  36800             31428 ns/op            6562 B/op        290 allocs/op
+BenchmarkComplexGolangText-16              88148             13370 ns/op            2235 B/op        107 allocs/op
+BenchmarkComplexEgo-16                    486294              2411 ns/op             568 B/op         31 allocs/op
+BenchmarkComplexQuicktemplate-16         1367928               878.1 ns/op             0 B/op          0 allocs/op
+BenchmarkComplexTempl-16                  788673              1400 ns/op             408 B/op         11 allocs/op
+BenchmarkComplexFtmpl-16                  293755              3982 ns/op            3534 B/op         38 allocs/op
+BenchmarkComplexFtmplInclude-16           317361              4142 ns/op            3534 B/op         38 allocs/op
+BenchmarkComplexMustache-16                90567             13748 ns/op            7274 B/op        156 allocs/op
+BenchmarkComplexGorazor-16                361304              3195 ns/op            3688 B/op         24 allocs/op
+BenchmarkComplexJetHTML-16                189176              5928 ns/op             532 B/op          5 allocs/op
+BenchmarkComplexHero-16                  1410391               863.5 ns/op             0 B/op          0 allocs/op
+BenchmarkComplexGoh-16                   2304783               535.4 ns/op             0 B/op          0 allocs/op
+BenchmarkComplexJade-16                  1826784               651.8 ns/op             0 B/op          0 allocs/op
+BenchmarkComplexGoDirectBuffer-16        2890996               414.6 ns/op             0 B/op          0 allocs/op
+BenchmarkComplexGoHyperscript-16         1717754               778.6 ns/op             0 B/op          0 allocs/op
+BenchmarkComplexGoStaticString-16       84003024                14.44 ns/op            0 B/op          0 allocs/op
+# 简单模板测试
+BenchmarkGolang-16                        300493              3691 ns/op             768 B/op         35 allocs/op
+BenchmarkGolangText-16                   1000000              1073 ns/op             128 B/op          7 allocs/op
+BenchmarkGoDirectBuffer-16              21959280                55.81 ns/op            0 B/op          0 allocs/op
+BenchmarkGoCustomHtmlAPI-16             14034298                85.06 ns/op            0 B/op          0 allocs/op
+BenchmarkGoFunc3-16                     14962965                68.62 ns/op            0 B/op          0 allocs/op
+BenchmarkEgo-16                          2577276               464.3 ns/op            85 B/op          8 allocs/op
+BenchmarkHB-16                            280617              4445 ns/op            2448 B/op         51 allocs/op
+BenchmarkQuicktemplate-16                7013572               168.9 ns/op             0 B/op          0 allocs/op
+BenchmarkFtmpl-16                        1000000              1000 ns/op             774 B/op         12 allocs/op
+BenchmarkAce-16                           179811              6605 ns/op            1121 B/op         40 allocs/op
+BenchmarkAmber-16                         268149              3800 ns/op             849 B/op         36 allocs/op
+BenchmarkMustache-16                      523143              2636 ns/op            1722 B/op         30 allocs/op
+BenchmarkPongo2-16                        350612              3862 ns/op            2074 B/op         32 allocs/op
+BenchmarkHandlebars-16                    162860              7261 ns/op            3423 B/op         75 allocs/op
+BenchmarkGorazor-16                      1562088               772.3 ns/op           512 B/op          5 allocs/op
+BenchmarkSoy-16                           639549              2200 ns/op            1224 B/op         19 allocs/op
+BenchmarkJetHTML-16                      1960117               600.4 ns/op             0 B/op          0 allocs/op
+BenchmarkHero-16                        10452396               113.9 ns/op             0 B/op          0 allocs/op
+BenchmarkGoh-16                         14838537                81.97 ns/op            0 B/op          0 allocs/op
+BenchmarkJade-16                        15025261                78.85 ns/op            0 B/op          0 allocs/op
+BenchmarkTempl-16                        4015622               293.1 ns/op            96 B/op          2 allocs/op
+BenchmarkGomponents-16                    479330              2882 ns/op            1112 B/op         56 allocs/op
+ok      github.com/SlinSo/goTemplateBenchmark   65.553s
+```
 
 ## 安装
 ```shell
