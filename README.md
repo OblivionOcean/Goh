@@ -2,7 +2,7 @@
 [![GoDoc](https://pkg.go.dev/badge/github.com/OblivionOcean/Goh)](https://pkg.go.dev/github.com/OblivionOcean/Goh)
 [![Go Report Card](https://goreportcard.com/badge/github.com/OblivionOcean/Goh)](https://goreportcard.com/report/github.com/OblivionOcean/Goh)
 
-Goh is a pre - compiled and fast template engine for the Go language.
+Goh is a pre-compiled and fast template engine for the Go language.
 
 English | [简体中文](https://github.com/OblivionOcean/Goh/blob/master/README_zh-CN.md)
 
@@ -14,13 +14,13 @@ English | [简体中文](https://github.com/OblivionOcean/Goh/blob/master/README
 - [Syntax](#syntax)
 
 ## Features
-- [x] Pre - compiled template engine to improve running speed.
+- [x] Pre-compiled template engine to improve running speed.
 - [x] Almost compatible with the syntax of the Go language.
-- [x] Zero - dependency.
-- [ ] Automatically re - compile after changing the template file.
+- [x] Zero-dependency.
+- [ ] Automatically re-compile after changing the template file.
 
 ## Performance Tests
-Obtained from https://github.com/slinso/goTemplateBenchmark. Currently, they are local test results, and the code is the same as the test code in Hero.
+Obtained from https://github.com/slinso/goTemplateBenchmark. They are local test results generated from the test code in Hero.
 
 ```txt
 goos: windows
@@ -84,9 +84,9 @@ go install golang.org/x/tools/cmd/goimports
 ~ $ Goh
 Usage of./Goh:
   -dest string
-        generated golang files dir, it will be the same with source if not set
+        generated golang files dir, it will be the same as source if not set
   -ext string
-        source file extensions, comma - separated if many (default ".html")
+        source file extensions, comma-separated if many (default ".html")
   -pkg string
         the generated template package name, default is template (default "template")
   -src string
