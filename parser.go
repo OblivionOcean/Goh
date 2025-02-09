@@ -187,7 +187,8 @@ func (p *Parser) pHTML() {
 
 func (p *Parser) pInclude() {
 	fpath := path.Join(path.Dir(p.fpath), strings.Trim(p.text[1:p.endCursor], " \"\t\n\r"))
-	tmp, rawCode, _ := p.Parse(fpath)
+	np := Parser{}
+	tmp, rawCode, _ := np.Parse(fpath)
 	rawCode += rawCode
 	for i := 0; i < len(tmp); i++ {
 		p.root.addChild(tmp[i])
