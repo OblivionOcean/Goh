@@ -17,6 +17,7 @@ const (
 	HTML
 	Code
 	rawCode
+	Extend
 )
 
 const (
@@ -30,21 +31,25 @@ const (
 )
 
 type Block struct {
-	Type     int
-	Children []*Block
-	Parent   *Block
-	Content  string
-	VarType  int
+	Type       int
+	Content    string
+	VarType    int
+	Before     Blocks
+	After      Blocks
+	AfterCount int
 }
 
 type Parser struct {
-	text       string
-	cursor     int
-	endCursor  int
-	root       Blocks
-	defindFunc *Block
-	rawCode    string
-	fpath      string
+	text           string
+	cursor         int
+	endCursor      int
+	root           Blocks
+	defindFunc     *Block
+	rawCode        string
+	fpath          string
+	extends        map[string]*Block
+	extendList     []*Block
+	unClosedExtend int
 }
 
 type Blocks []*Block
@@ -66,6 +71,7 @@ func (p *Parser) Parse(fpath string) (Blocks, string, *Block) {
 	p.text = readFile(fpath)
 	p.root = Blocks{}
 	p.fpath = fpath
+	p.extends = map[string]*Block{}
 	for {
 		p.cursor = strings.Index(p.text, "<%")
 		if p.cursor == -1 {
@@ -101,6 +107,10 @@ func (p *Parser) Parse(fpath string) (Blocks, string, *Block) {
 					}
 				case '!':
 					p.rawCode += p.text[1:p.endCursor] + "\n"
+				case '~':
+					p.addParent()
+				case '@':
+					p.useBlock()
 				default:
 					p.root.addChild(&Block{
 						Type:    Code,
@@ -118,6 +128,15 @@ func (p *Parser) Parse(fpath string) (Blocks, string, *Block) {
 			})
 			break
 		}
+	}
+	if p.unClosedExtend > 0 {
+		panic("Unclosed extend, please check the syntax!\n\033[0;33mWarning:\033[0m This syntax is different from the Hero, please check Goh's documentation: https://github.com/OblivionOcean/Goh#syntax")
+	}
+	for _, block := range p.extends {
+		if block.AfterCount > 0 {
+			block.After = append(block.After, p.root[block.AfterCount:]...)
+		}
+		block.AfterCount = 0
 	}
 	return p.root, p.rawCode, p.defindFunc
 }
@@ -192,5 +211,52 @@ func (p *Parser) pInclude() {
 	p.rawCode += rawCode
 	for i := 0; i < len(tmp); i++ {
 		p.root.addChild(tmp[i])
+	}
+}
+
+func (p *Parser) addParent() {
+	fpath := path.Join(path.Dir(p.fpath), strings.Trim(p.text[1:p.endCursor], " \"\t\n\r"))
+	np := &Parser{}
+	np.Parse(fpath)
+	for name, block := range np.extends {
+		if _, ok := p.extends[name]; !ok {
+			p.extends[name] = block
+		}
+	}
+}
+
+func (p *Parser) useBlock() {
+	name := strings.Trim(p.text[1:p.endCursor], " \"\t\n\r{")
+	if name == "}" {
+		if len(p.extendList) == 0 {
+			panic("Unclosed extend, please check the syntax!\n\033[0;33mWarning:\033[0m This syntax is different from the Hero, please check Goh's documentation: https://github.com/OblivionOcean/Goh#syntax")
+		}
+		block := p.extendList[len(p.extendList)-1]
+		if _, ok := p.extends[block.Content]; ok {
+			for i := 0; i < len(block.After); i++ {
+				p.root.addChild(block.After[i])
+			}
+		} else {
+			p.root.addChild(block)
+			block.AfterCount = len(p.root)
+			p.extends[block.Content] = block
+		}
+		p.unClosedExtend--
+		p.extendList = p.extendList[:len(p.extendList)-1]
+	} else if block, ok := p.extends[name]; ok {
+		p.unClosedExtend++
+		for i := 0; i < len(block.Before); i++ {
+			p.root.addChild(block.Before[i])
+		}
+		p.extendList = append(p.extendList, block)
+	} else {
+		p.unClosedExtend++
+		block := &Block{
+			Type:    Extend,
+			Content: name,
+			Before:  p.root[:len(p.root)],
+		}
+		p.root.addChild(block)
+		p.extendList = append(p.extendList, block)
 	}
 }

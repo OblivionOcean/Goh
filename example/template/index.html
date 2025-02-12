@@ -1,26 +1,16 @@
 <%: func UserList(title string, userList []string, buf *bytes.Buffer) %>
-    <!DOCTYPE html>
-    <html>
-
-    <head>
-        <title>
-            <%= title %>
-        </title>
-    </head>
-
-    <body>
-        <h1>
-            <%= title %>
-        </h1>
-        <ul>
-            <% for _, user :=range userList { %>
-                <% if user !="Alice" { %>
-                    <li>
-                        <%= user %>
-                    </li>
-                    <% } %>
-                        <% } %>
-        </ul>
-    </body>
-
-    </html>
+<%~ ./extend.html %>
+<%@ body {%>
+    <h1>
+        <%= title %>
+    </h1>
+    <ul>
+        <% for _, user :=range userList { %>
+            <% if user !="Alice" { %>
+                <li>
+                    <%= user %>
+                </li>
+            <% } %>
+        <% } %>
+    </ul>
+<%@ } %>

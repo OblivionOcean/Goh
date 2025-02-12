@@ -87,6 +87,8 @@ func (g *Generator) generate() {
 			g.gEscape(b)
 		case Val:
 			g.gVal(b)
+		case Extend:
+			continue
 		}
 	}
 	g.Text.WriteString(strconv.Itoa(g.ConstLength))

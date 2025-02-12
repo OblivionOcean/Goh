@@ -71,5 +71,5 @@ func FormatBool(n bool, buf *bytes.Buffer) {
 }
 
 func FormatAny(n any, buf *bytes.Buffer) {
-	buf.WriteString(fmt.Sprintf("%s", n))
+	buf.WriteString(fmt.Sprint(n))
 }
