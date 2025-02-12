@@ -203,9 +203,28 @@ Goh has a total of nine statements, which are:
     %>
     ```
   
-- Block Statement `<%@ blockName { %> <% } %>`
+- Block Statement `<%@ blockName { %> <%@ } %>`
 > [!WARNING]
-> This syntax is not currently supported. Please use other methods instead.
+> Unlike Hero, closing a block requires the use of '<%@ } %>' instead of '<% } %>'`
+> This change mainly improves compiler compilation performance and shortens compilation time
+
+  - Block statement represents a block. Child template overwrites blocks to extend parent template.
+
+  - Example:
+
+    ```html
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <meta charset="utf-8">
+        </head>
+
+        <body>
+            <%@ body { %>
+            <% } %>
+        </body>
+    </html>
+    ```
 
 - Go Code Statement `<% go code %>`
   - This statement defines the code part inside the function.
