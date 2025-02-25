@@ -55,8 +55,6 @@ func (g *Generator) New(fpath string) {
 	file.WriteString("// DO NOT EDIT!\n// Generate By Goh\n\n")
 	g.Text = file
 	g.generate()
-	execCommand("goimports -w .")
-	execCommand("gofmt -w .")
 	fmt.Println("\033[0;32mSuccess\033[0m", fpath)
 }
 
