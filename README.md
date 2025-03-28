@@ -159,7 +159,7 @@ Goh has a total of nine statements, which are:
 
 - Function Definition Statement `<%: func define %>`
   - This statement defines the function corresponding to the template. If there is no function definition statement in a template, the final result will not generate the corresponding function.
-  - The last parameter of this function must be `*bytes.Buffer` or `io.Writer`. Hero will automatically recognize the name of this parameter and write the result to this parameter.
+  - The last parameter of this function must be `*bytes.Buffer`. Hero will automatically recognize the name of this parameter and write the result to this parameter.
   - Examples:
     - `<%: func UserList(userList []string, buffer *bytes.Buffer) %>`
     - `<%: func UserList(userList []string, w io.Writer) %>`
