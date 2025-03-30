@@ -156,7 +156,7 @@ Goh总共有九种语句，他们分别是：
 
 - 函数定义语句 `<%: func define %>`
   - 该语句定义了该模板所对应的函数，如果一个模板中没有函数定义语句，那么最终结果不会生成对应的函数。
-  - 该函数最后一个参数必须为`*bytes.Buffer`或者`io.Writer`, hero会自动识别该参数的名字，并把把结果写到该参数里。
+  - 该函数最后一个参数必须为`*bytes.Buffer`, Goh会自动识别该参数的名字，并把把结果写到该参数里。
   - 例:
     - `<%: func UserList(userList []string, buffer *bytes.Buffer) %>`
     - `<%: func UserList(userList []string, w io.Writer) %>`
