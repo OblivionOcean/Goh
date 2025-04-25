@@ -14,6 +14,10 @@ import (
 	"strings"
 )
 
+const (
+	DefineParamsEmpty = errors.New("definition parameters should not be empty")
+)
+
 func execCommand(command string) {
 	parts := strings.Split(command, " ")
 	if len(parts) == 0 {
@@ -112,7 +116,7 @@ func (g *Generator) gFunc(b *Block) (code string, name string, err error) {
 
 	params := funcDecl.Type.Params.List
 	if len(params) == 0 {
-		err = errors.New("definition parameters should not be empty")
+		err = DefineParamsEmpty
 		return
 	}
 
@@ -123,12 +127,12 @@ func (g *Generator) gFunc(b *Block) (code string, name string, err error) {
 	}
 	selectorExpr, ok := expr.(*ast.SelectorExpr)
 	if !ok {
-		err = errors.New("definition parameters should not be empty")
+		err = DefineParamsEmpty
 		return
 	}
 
 	if selectorExpr.X.(*ast.Ident).Name != "bytes" && selectorExpr.Sel.Name != "Buffer" {
-		err = errors.New("definition parameters should not be empty")
+		err = DefineParamsEmpty
 		return
 	}
 	if n := len(lastParam.Names); n > 0 {
