@@ -14,8 +14,8 @@ import (
 	"strings"
 )
 
-const (
-	DefineParamsEmpty = errors.New("definition parameters should not be empty")
+var (
+	ErrDefineParamsEmpty = errors.New("definition parameters should not be empty")
 )
 
 func execCommand(command string) {
@@ -45,7 +45,7 @@ type Generator struct {
 	Dest        string
 }
 
-// Create a new Generator and generate the code
+// New Generator and generate the code
 func (g *Generator) New(fpath string) {
 	if g.PackageName == "" {
 		g.PackageName = "template"
@@ -116,7 +116,7 @@ func (g *Generator) gFunc(b *Block) (code string, name string, err error) {
 
 	params := funcDecl.Type.Params.List
 	if len(params) == 0 {
-		err = DefineParamsEmpty
+		err = ErrDefineParamsEmpty
 		return
 	}
 
@@ -127,12 +127,12 @@ func (g *Generator) gFunc(b *Block) (code string, name string, err error) {
 	}
 	selectorExpr, ok := expr.(*ast.SelectorExpr)
 	if !ok {
-		err = DefineParamsEmpty
+		err = ErrDefineParamsEmpty
 		return
 	}
 
 	if selectorExpr.X.(*ast.Ident).Name != "bytes" && selectorExpr.Sel.Name != "Buffer" {
-		err = DefineParamsEmpty
+		err = ErrDefineParamsEmpty
 		return
 	}
 	if n := len(lastParam.Names); n > 0 {

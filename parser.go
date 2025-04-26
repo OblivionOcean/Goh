@@ -94,32 +94,9 @@ func (p *Parser) Parse(fpath string) (Blocks, string, *Block) {
 			if Goh.CountByte(p.text[:p.endCursor], '`')%2 != 0 || Goh.CountByte(p.text[:p.endCursor], '"')%2 != 0 {
 				p.cursor = p.endCursor
 				continue
-			} else {
-				switch p.text[0] {
-				case '=', '-':
-					p.pHTML()
-				case '#':
-				case '+':
-					p.pInclude()
-				case ':':
-					p.defindFunc = &Block{
-						Content: strings.Trim(p.text[1:p.endCursor], "\n\t\r "),
-					}
-				case '!':
-					p.rawCode += p.text[1:p.endCursor] + "\n"
-				case '~':
-					p.addParent()
-				case '@':
-					p.useBlock()
-				default:
-					p.root.addChild(&Block{
-						Type:    Code,
-						Content: p.text[:p.endCursor],
-					})
-				}
-				p.text = p.text[p.endCursor+2:]
-				break
 			}
+			p.parse()
+			break
 		}
 		if 2 >= len(p.text) {
 			p.root.addChild(&Block{
@@ -151,6 +128,32 @@ func readFile(fpath string) string {
 		panic(err.Error())
 	}
 	return Goh.Byte2String(tmp)
+}
+
+func (p *Parser) parse() {
+	switch p.text[0] {
+	case '=', '-':
+		p.pHTML()
+	case '#':
+	case '+':
+		p.pInclude()
+	case ':':
+		p.defindFunc = &Block{
+			Content: strings.Trim(p.text[1:p.endCursor], "\n\t\r "),
+		}
+	case '!':
+		p.rawCode += p.text[1:p.endCursor] + "\n"
+	case '~':
+		p.addParent()
+	case '@':
+		p.useBlock()
+	default:
+		p.root.addChild(&Block{
+			Type:    Code,
+			Content: p.text[:p.endCursor],
+		})
+	}
+	p.text = p.text[p.endCursor+2:]
 }
 
 func (p *Parser) pHTML() {
