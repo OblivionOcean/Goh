@@ -15,7 +15,7 @@ English | [简体中文](https://github.com/OblivionOcean/Goh/blob/master/README
 
 ## Features
 - [x] Pre-compiled template engine to improve running speed.
-- [x] Almost compatible with the syntax of the Go language.
+- [x] Almost compatible with the syntax of the Hero language.
 - [x] Zero-dependency.
 - [ ] Automatically re-compile after changing the template file.
 
