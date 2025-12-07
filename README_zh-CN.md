@@ -71,11 +71,10 @@ ok      github.com/SlinSo/goTemplateBenchmark   65.553s
 ## 安装
 ```shell
 go get -u github.com/OblivionOcean/Goh
-go install github.com/OblivionOcean/Goh
+go install github.com/OblivionOcean/Goh@latest
 
 # 依赖
-go get golang.org/x/tools/cmd/goimports
-go install golang.org/x/tools/cmd/goimports
+go install golang.org/x/tools/cmd/goimports@latest
 ```
 ## 使用
 ```
