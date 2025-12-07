@@ -25,10 +25,7 @@ func main() {
 				Dest:        *dest,
 				PackageName: *packname,
 			}
-			g.New(files[i].Name())
+			g.New(path.Join(*src, files[i].Name()))
 		}
 	}
-	os.Chdir(*dest)
-	execCommand("goimports -w .")
-	execCommand("gofmt -w .")
 }
