@@ -73,11 +73,10 @@ ok      github.com/SlinSo/goTemplateBenchmark   65.553s
 ## Installation
 ```shell
 go get -u github.com/OblivionOcean/Goh
-go install github.com/OblivionOcean/Goh
+go install github.com/OblivionOcean/Goh@latest
 
 # Dependencies
-go get golang.org/x/tools/cmd/goimports
-go install golang.org/x/tools/cmd/goimports
+go install golang.org/x/tools/cmd/goimports@latest
 ```
 ## Usage
 ```shell
