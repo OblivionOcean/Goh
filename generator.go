@@ -19,12 +19,11 @@ var (
 )
 
 func execCommand(command string) {
-	parts := strings.Split(command, " ")
-	if len(parts) == 0 {
+	if command == "" {
 		return
 	}
 
-	cmd := exec.Command(parts[0], parts[1:]...)
+	cmd := exec.Command("sh", "-c", command)
 	cmd.Stderr = os.Stderr
 
 	err := cmd.Run()
@@ -50,12 +49,16 @@ func (g *Generator) New(fpath string) {
 	if g.PackageName == "" {
 		g.PackageName = "template"
 	}
+	if g.Dest == "" {
+		g.Dest = "."
+	}
 	g.Text2 = bytes.NewBuffer(nil)
 	g.Root, g.RawCode, g.DefindFunc = (&Parser{}).Parse(fpath)
 	file, err := os.Create(path.Join(g.Dest, path.Base(fpath)+".go"))
 	if err != nil {
 		panic(err.Error())
 	}
+	defer file.Close()
 	file.WriteString("// DO NOT EDIT!\n// Generate By Goh\n\n")
 	g.Text = file
 	g.generate()
@@ -106,7 +109,11 @@ func (g *Generator) gFunc(b *Block) (code string, name string, err error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, "", src, parser.AllErrors)
 	if err != nil {
-		return
+		return "", "", err
+	}
+
+	if len(file.Decls) == 0 {
+		return "", "", errors.New("definition has no declarations")
 	}
 
 	funcDecl, ok := file.Decls[0].(*ast.FuncDecl)
@@ -131,7 +138,8 @@ func (g *Generator) gFunc(b *Block) (code string, name string, err error) {
 		return
 	}
 
-	if selectorExpr.X.(*ast.Ident).Name != "bytes" && selectorExpr.Sel.Name != "Buffer" {
+	ident, ok := selectorExpr.X.(*ast.Ident)
+	if !ok || ident.Name != "bytes" || selectorExpr.Sel.Name != "Buffer" {
 		err = ErrDefineParamsEmpty
 		return
 	}
@@ -157,6 +165,8 @@ func (g *Generator) gVal(b *Block) {
 		tmp = fmt.Sprintf("Goh.FormatInt(int64(%s), %s)\n", b.Content, g.BufName)
 	case Uint:
 		tmp = fmt.Sprintf("Goh.FormatUint(uint64(%s), %s)\n", b.Content, g.BufName)
+	case Float:
+		tmp = fmt.Sprintf("Goh.FormatFloat(%s, %s)\n", b.Content, g.BufName)
 	case Bool:
 		tmp = fmt.Sprintf("Goh.FormatBool(%s, %s)\n", b.Content, g.BufName)
 		g.ConstLength += 5
@@ -181,6 +191,8 @@ func (g *Generator) gEscape(b *Block) {
 		tmp = fmt.Sprintf("Goh.FormatInt(int64(%s), %s)\n", b.Content, g.BufName)
 	case Uint:
 		tmp = fmt.Sprintf("Goh.FormatUint(uint64(%s), %s)\n", b.Content, g.BufName)
+	case Float:
+		tmp = fmt.Sprintf("Goh.FormatFloat(%s, %s)\n", b.Content, g.BufName)
 	case Bool:
 		tmp = fmt.Sprintf("Goh.FormatBool(%s, %s)\n", b.Content, g.BufName)
 		g.ConstLength += 5
@@ -195,6 +207,10 @@ func (g *Generator) gHTML(b *Block) {
 		return
 	}
 	tmp := "%s.WriteString(`%s`)\n"
+	
+	// Handle backtick escaping in HTML
+	b.Content = strings.ReplaceAll(b.Content, "`", "\\`")
+
 	g.ConstLength += len(b.Content)
 	g.Text2.WriteString(fmt.Sprintf(tmp, g.BufName, b.Content))
 }

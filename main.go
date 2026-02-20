@@ -28,4 +28,7 @@ func main() {
 			g.New(path.Join(*src, files[i].Name()))
 		}
 	}
+	os.Chdir(*dest)
+	execCommand("goimports -w .")
+	execCommand("gofmt -w .")
 }
