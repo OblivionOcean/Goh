@@ -7,14 +7,25 @@ import (
 )
 
 func main() {
-	dest := flag.String("dest", "", "generated golang files dir, it will be the same with source if not set")
+	dest := flag.String(
+		"dest",
+		"",
+		"generated golang files dir, it will be the same with source if not set",
+	)
 	ext := flag.String("ext", ".html", "source file extensions, comma splitted if many")
-	packname := flag.String("pkg", "template", "the generated template package name, default is template")
+	packname := flag.String(
+		"pkg",
+		"template",
+		"the generated template package name, default is template",
+	)
 	src := flag.String("src", "./", "the html template file or directory")
 	flag.Parse()
 	files, err := os.ReadDir(*src)
 	if err != nil {
 		panic(err.Error())
+	}
+	if dest == nil || *dest == "" {
+		dest = src
 	}
 	for i := 0; i < len(files); i++ {
 		if files[i].IsDir() {
@@ -29,6 +40,6 @@ func main() {
 		}
 	}
 	os.Chdir(*dest)
-	execCommand("goimports -w .")
-	execCommand("gofmt -w .")
+	runTool("goimports", "-w", ".")
+	runTool("gofmt", "-w", ".")
 }
