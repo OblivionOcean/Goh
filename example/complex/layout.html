@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title><%= title %></title>
+    <%@ head-extra { %>
+    <meta name="description" content="default description">
+    <%@ } %>
+</head>
+<body>
+    <header class="site-header">
+        <h1><%= title %></h1>
+    </header>
+    <%+ "site-nav.html" %>
+    <%@ body { %>
+    <%@ } %>
+    <footer>&copy; 2026 Example Co.</footer>
+</body>
+</html>

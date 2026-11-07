@@ -1,0 +1,10 @@
+<%: func Page(title string, greeting string, activePage string, isAdmin bool, buf *bytes.Buffer) %>
+<%~ "layout.html" %>
+<%@ head-extra { %>
+<meta name="description" content="custom page description">
+<meta name="author" content="the child">
+<%@ } %>
+<%@ body { %>
+<p class="greeting"><%= greeting %></p>
+<p class="custom-body">This body was overridden by the child.</p>
+<%@ } %>

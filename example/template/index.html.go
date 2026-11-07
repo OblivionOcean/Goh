@@ -5,16 +5,14 @@ package template
 
 import (
 	"bytes"
-
-	Goh "github.com/OblivionOcean/Goh/utils"
+	"github.com/OblivionOcean/Goh/utils"
 )
 
 func UserList(title string, userList []string, buf *bytes.Buffer) {
-	buf.Grow(285)
+	buf.Grow(303)
 	buf.WriteString(`
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -24,6 +22,8 @@ func UserList(title string, userList []string, buf *bytes.Buffer) {
 </head>
 
 <body>
+    `)
+	buf.WriteString(`
     
     <h1>
         `)
@@ -49,8 +49,11 @@ func UserList(title string, userList []string, buf *bytes.Buffer) {
 	}
 	buf.WriteString(`
     </ul>
-
+`)
+	buf.WriteString(`
 </body>
 
-</html>`)
+</html>
+
+`)
 }
