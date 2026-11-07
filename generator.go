@@ -14,15 +14,25 @@ import (
 	"strings"
 )
 
-// execCommand runs a shell command if the string is non-empty, ignoring errors.
-func execCommand(command string) {
-	if command == "" {
+func runTool(name string, args ...string) {
+	// 1. Check if the tool exists directly in the system PATH
+	if _, err := exec.LookPath(name); err == nil {
+		cmd := exec.Command(name, args...)
+		cmd.Stderr = os.Stderr
+		_ = cmd.Run()
 		return
 	}
-	cmd := exec.Command("sh", "-c", command)
-	cmd.Stderr = os.Stderr
-	// Ignore errors as the tool may not be installed.
-	_ = cmd.Run()
+
+	// 2. Fallback: Try running via 'go tool <name>'
+	// (Great for tools like goimports tracked via Go's tool directives)
+	if _, err := exec.LookPath("go"); err == nil {
+		goArgs := append([]string{"tool", name}, args...)
+		cmd := exec.Command("go", goArgs...)
+		_ = cmd.Run()
+		return
+	}
+
+	// If neither works, the tool is optional and not installed—skip silently.
 }
 
 // Generator walks the block tree, emitting the Children of Extend blocks
