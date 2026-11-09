@@ -7,16 +7,12 @@ import (
 	"strings"
 )
 
+// CountByte counts the number of occurrences of sep in s. It delegates to
+// strings.Count, which for a single-byte sep dispatches to the
+// assembly-optimized bytealg.CountString (SSE/AVX2 on amd64/arm64), so it
+// is far faster than a portable Go loop.
 func CountByte(s string, sep byte) int {
-	n := 0
-	for {
-		i := strings.IndexByte(s, sep)
-		if i == -1 {
-			return n
-		}
-		n++
-		s = s[i+1:]
-	}
+	return strings.Count(s, string(sep))
 }
 
 var (

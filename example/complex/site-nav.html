@@ -1,0 +1,17 @@
+<nav class="site-nav">
+    <% if activePage == "/" { %>
+    <a href="/" class="active">Home</a>
+    <% } else { %>
+    <a href="/">Home</a>
+    <% } %>
+    <% if activePage == "/users" { %>
+    <a href="/users" class="active">Users</a>
+    <% } else { %>
+    <a href="/users">Users</a>
+    <% } %>
+    <a href="/about">About</a>
+    <a href="/contact">Contact</a>
+    <% if isAdmin { %>
+    <a href="/admin" class="admin-link">Admin</a>
+    <% } %>
+</nav>

@@ -14,26 +14,31 @@ import (
 	"strings"
 )
 
-var (
-	ErrDefineParamsEmpty = errors.New("definition parameters should not be empty")
-)
-
-func execCommand(command string) {
-	if command == "" {
+func runTool(name string, args ...string) {
+	// 1. Check if the tool exists directly in the system PATH
+	if _, err := exec.LookPath(name); err == nil {
+		cmd := exec.Command(name, args...)
+		cmd.Stderr = os.Stderr
+		_ = cmd.Run()
 		return
 	}
 
-	cmd := exec.Command("sh", "-c", command)
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(err)
+	// 2. Fallback: Try running via 'go tool <name>'
+	// (Great for tools like goimports tracked via Go's tool directives)
+	if _, err := exec.LookPath("go"); err == nil {
+		goArgs := append([]string{"tool", name}, args...)
+		cmd := exec.Command("go", goArgs...)
+		_ = cmd.Run()
+		return
 	}
+
+	// If neither works, the tool is optional and not installed—skip silently.
 }
 
+// Generator walks the block tree, emitting the Children of Extend blocks
+// inline (so a child's override content lands where the layout declared it).
 type Generator struct {
-	DefindFunc  *Block
+	DefineFunc  *Block
 	Root        Blocks
 	Text        *os.File
 	Text2       *bytes.Buffer
@@ -44,7 +49,7 @@ type Generator struct {
 	Dest        string
 }
 
-// New Generator and generate the code
+// New parses the template and generates the Go code.
 func (g *Generator) New(fpath string) {
 	if g.PackageName == "" {
 		g.PackageName = "template"
@@ -53,7 +58,7 @@ func (g *Generator) New(fpath string) {
 		g.Dest = "."
 	}
 	g.Text2 = bytes.NewBuffer(nil)
-	g.Root, g.RawCode, g.DefindFunc = (&Parser{}).Parse(fpath)
+	g.Root, g.RawCode, g.DefineFunc = (&Parser{}).Parse(fpath)
 	file, err := os.Create(path.Join(g.Dest, path.Base(fpath)+".go"))
 	if err != nil {
 		panic(err.Error())
@@ -68,11 +73,11 @@ func (g *Generator) New(fpath string) {
 func (g *Generator) generate() {
 	g.Text.WriteString("package ")
 	g.Text.WriteString(g.PackageName)
-	g.Text.WriteString("\nimport (\n\t\"bytes\"\n\t\"github.com/OblivionOcean/Goh/utils\"\n)\n\n")
-	if g.DefindFunc == nil {
+	if g.DefineFunc == nil {
 		return
 	}
-	code, name, err := g.gFunc(g.DefindFunc)
+	g.Text.WriteString("\nimport (\n\t\"bytes\"\n\t\"github.com/OblivionOcean/Goh/utils\"\n)\n\n")
+	code, name, err := g.gFunc(g.DefineFunc)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -80,8 +85,19 @@ func (g *Generator) generate() {
 	g.Text.WriteString(g.RawCode)
 	g.Text.WriteString(code)
 	g.Text.WriteString(fmt.Sprintf("{\n%s.Grow(", name))
-	for i := 0; i < len(g.Root); i++ {
-		b := g.Root[i]
+	// Walk the block tree, emitting blocks in order.
+	g.emitBlocks(g.Root)
+	g.Text.WriteString(strconv.Itoa(g.ConstLength))
+	g.Text.WriteString(")\n")
+	g.Text.ReadFrom(g.Text2)
+	g.Text.WriteString("}\n")
+}
+
+// emitBlocks walks a list of blocks and emits them in order. For Extend
+// blocks, it recursively emits the block's Children (the child's override
+// content).
+func (g *Generator) emitBlocks(blocks Blocks) {
+	for _, b := range blocks {
 		switch b.Type {
 		case Code:
 			g.Text2.WriteString(b.Content)
@@ -93,13 +109,10 @@ func (g *Generator) generate() {
 		case Val:
 			g.gVal(b)
 		case Extend:
-			continue
+			// Emit the block's children (the child's override content).
+			g.emitBlocks(b.Children)
 		}
 	}
-	g.Text.WriteString(strconv.Itoa(g.ConstLength))
-	g.Text.WriteString(")\n")
-	g.Text.ReadFrom(g.Text2)
-	g.Text.WriteString("}\n")
 }
 
 func (g *Generator) gFunc(b *Block) (code string, name string, err error) {
@@ -207,7 +220,7 @@ func (g *Generator) gHTML(b *Block) {
 		return
 	}
 	tmp := "%s.WriteString(`%s`)\n"
-	
+
 	// Handle backtick escaping in HTML
 	b.Content = strings.ReplaceAll(b.Content, "`", "\\`")
 
